@@ -8,7 +8,7 @@ const wss = new WebSocketServer({ port: PORT });
 
 const actions = new Actions(wss);
 
-wss.on('connection', (ws) => {
+wss.on('connection', function connection(ws) {
   ws.on('error', console.error);
 
   ws.on('message', (msg: string) => {
@@ -20,15 +20,15 @@ wss.on('connection', (ws) => {
         break;
 
       case 'create_room':
-        
+        actions.createRoom(ws, data);
         break;
 
-      case 'add_player_to_room':
-        
+      case 'add_user_to_room':
+        actions.addPlayerToRoom(ws, data);
         break;
 
       case 'add_ships':
-        
+        actions.addShips(ws, data);
         break;
 
       case 'attack':

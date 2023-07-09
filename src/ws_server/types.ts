@@ -1,10 +1,17 @@
+import  WebSocket from 'ws';
+
 export interface RequestResponse {
   type: string,
   data: string,
   id: number,
 }
 
-
+export interface UserData {
+  id: number,
+  name: string,
+  password: string,
+  userWS: WebSocket,
+}
 
 export interface LoginData {
   name: string,

@@ -32,11 +32,11 @@ wss.on('connection', function connection(ws) {
         break;
 
       case 'attack':
-        
+        actions.attack(data);
         break;
     
       case 'randomAttack':
-        
+        actions.randomAttack(data);
         break;
     
       default:

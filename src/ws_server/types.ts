@@ -82,7 +82,7 @@ export interface StartGameServer {
 }
 
 export interface AttackClient {
-  gameID: number,
+  gameId: number,
   x: number,
   y: number,
   indexPlayer: number,

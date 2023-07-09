@@ -43,6 +43,7 @@ class Room {
 
   addPlayerToRoom = (index: number, {name, userWS}: UserData): string => {
     this.roomUsers.push({index, name, userWS});
+    this.isGame = true;
     return JSON.stringify({
         roomId: this.roomId,
         roomUsers: this.roomUsers.map(({name, index}) => ({name, index})),
@@ -73,10 +74,11 @@ class Room {
 
           for (let i = 0; i < size; i++) {
             const field = {
-              x: ship.position.x + (ship.direction ? i : 0),
-              y: ship.position.y + (!ship.direction ? i : 0),
+              x: ship.position.x + (!ship.direction ? i : 0),
+              y: ship.position.y + (ship.direction ? i : 0),
               shot: false,
             }
+            fields.push(field);
           }
           ship.status = "unbroken";
           ship.fields = fields;
@@ -85,7 +87,6 @@ class Room {
       }
     });
     if (this.roomUsers.filter((user) => !!user.ships).length === 2) {
-      this.isGame = true;
       this.roomUsers.forEach((user) => {
         user.userWS.send(JSON.stringify({
           type: "start_game",
@@ -99,40 +100,64 @@ class Room {
     }
   }
 
-  atack = (data: AttackClient): AttackServer => {
+  atack = (data: AttackClient) => {
     const { x, y, indexPlayer } = data;
-    let result: "killed" | "shot" | "miss" = "miss";
-    this.roomUsers.forEach((user) => {
-      if (user.index !== indexPlayer) {
-        user.ships?.map((ship) => {
-          if (ship.status === "unbroken" || ship.status === "shot") {
-            ship.fields?.map((field) => {
-              if (!field.shot && field.x === x && field.y === y) {
-                ship.status = "shot";
-                field.shot = true;
-                result = "shot";
+    if (this.currentPlayer === indexPlayer) {
+      let result: "killed" | "shot" | "miss" = "miss";
+      this.roomUsers.forEach((user) => {
+        if (user.index !== indexPlayer) {
+          user.ships?.map((ship) => {
+            if (ship.status === "unbroken" || ship.status === "shot") {
+              ship.fields?.map((field) => {
+                if (!field.shot && field.x === x && field.y === y) {
+                  ship.status = "shot";
+                  field.shot = true;
+                  result = "shot";
+                }
+                return field;
+              });
+              if (ship.fields?.every((el) => el.shot)) {
+                ship.status = "killed";
+                result = "killed";
               }
-              return field;
-            });
-            if (ship.fields?.every((el) => el.shot)) {
-              ship.status = "killed";
-              result = "killed";
             }
-          }
-          return ship;
-        });
-      }
-      
-    })
-    return {
-      position:
-        {
-          x: x,
-          y: y,
-        },
+            return ship;
+          });
+        }
+      })
+      const res = JSON.stringify({
+        position:
+          {
+            x: x,
+            y: y,
+          },
+        currentPlayer: indexPlayer,
+        status: result,
+      });
+  
+      this.roomUsers.forEach((user) => {
+        user.userWS.send(JSON.stringify({
+          type: "attack",
+          data: res,
+          id: 0,
+        }));
+      });
+      this.turn();
+    }
+  }
+
+  turn = () => {
+    this.currentPlayer = this.currentPlayer === 1 ? 0 : 1;
+    const res = JSON.stringify({
       currentPlayer: this.currentPlayer,
-      status: result,
-    };
+    });
+    this.roomUsers.forEach((user) => {
+      user.userWS.send(JSON.stringify({
+        type: "turn",
+        data: res,
+        id: 0,
+      }));
+    })
   }
 
   winGame = () => {

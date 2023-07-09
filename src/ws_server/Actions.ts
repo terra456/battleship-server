@@ -2,6 +2,7 @@ import  WebSocket, { WebSocketServer } from 'ws';
 import { Server } from "ws";
 import { LoginData, LoginServer, RequestResponse, UserData } from "./types";
 import Room from './Room';
+import { randomInteger } from './utils';
 
 class Actions {
   winners: never[];
@@ -116,24 +117,28 @@ class Actions {
   addShips = (ws: WebSocket, req: RequestResponse) => {
     const {gameId, ships, indexPlayer} = JSON.parse(req.data);
     this.rooms[gameId].addShips(indexPlayer, ships);
-    this.rooms[gameId].startGameEmitter.once('start', (currentPlayer: number) => {
-      ws.send(JSON.stringify({
-        type: "start_game",
-        data: JSON.stringify({
-          ships: ships,
-          currentPlayerIndex: currentPlayer,
-        }),
-        id: req.id,
-      }));
-    })
+    // this.rooms[gameId].startGameEmitter.once('start', (currentPlayer: number) => {
+      // ws.send(JSON.stringify({
+      //   type: "start_game",
+      //   data: JSON.stringify({
+      //     ships: ships,
+      //     currentPlayerIndex: currentPlayer,
+      //   }),
+      //   id: req.id,
+      // }));
+    // })
   }
 
-  Attack = () => {
-
+  attack = (req: RequestResponse) => {
+    const {gameId, x, y, indexPlayer} = JSON.parse(req.data);
+    this.rooms[gameId].atack({gameId, x, y, indexPlayer});
   }
-    
-  randomAttack = () => {
 
+  randomAttack = (req: RequestResponse) => {
+    const {gameId, indexPlayer} = JSON.parse(req.data);
+    const x = randomInteger(0, 9);
+    const y = randomInteger(0, 9);
+    this.rooms[gameId].atack({gameId, x, y, indexPlayer});
   }
 
 

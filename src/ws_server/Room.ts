@@ -114,7 +114,7 @@ class Room {
         })
         if (resData[0].status === "killed") {
           if (this.game.isWinGame(indexPlayer)) {
-            this.winGame();
+            this.winGame(indexPlayer);
             return;
           }
         }
@@ -152,9 +152,9 @@ class Room {
   //   }
   // }
 
-  winGame = () => {
+  winGame = (index: number) => {
     const res = {
-      winPlayer: this.currentPlayer,
+      winPlayer: index,
     };
     this.roomUsers.forEach((user) => {
       user.userWS && user.userWS.send(JSON.stringify({

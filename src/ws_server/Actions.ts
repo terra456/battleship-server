@@ -86,7 +86,7 @@ class Actions {
       const resUpdate: RequestResponse = {
         type: 'update_room',
         data:
-            JSON.stringify(this.rooms.map((el) => el && el.startedInfo()).filter((el) => el)),
+            JSON.stringify(this.rooms.map((el) => el && el.roomUsers.length === 1 && el.startedInfo()).filter((el) => el)),
         id: userId,
       }
       ws.send(JSON.stringify(resUpdate));
@@ -210,6 +210,17 @@ class Actions {
         client.send(JSON.stringify(res));
       }
     });
+  }
+
+  leaveGame = (ws: WebSocket) => {
+    this.rooms.forEach((el) => {
+      const index = el.roomUsers.findIndex((user) => user.userWS === ws);
+      if (index >= 0) {
+        if (el.game.isGame) {
+          el.winGame(index === 0 ? 1 : 0);
+        }
+      }
+    })
   }
 
 }

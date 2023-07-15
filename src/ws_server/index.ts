@@ -14,6 +14,10 @@ const actions = new Actions(wss);
 wss.on('connection', function connection(ws) {
   ws.on('error', console.error);
 
+  ws.on('close', () => {
+    actions.leaveGame(ws);
+  })
+
   ws.on('message', (msg: string) => {
     const data = JSON.parse(msg);
     switch (data.type) {
@@ -52,6 +56,7 @@ wss.on('connection', function connection(ws) {
 
   ws.send('something');
 });
+
 winGameEmitter.on('win', (name) => {
   actions.addWinner(name);
 })

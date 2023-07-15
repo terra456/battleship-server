@@ -94,18 +94,17 @@ class Game {
 
   }
 
-  public atack = (data: AttackClient): Array<AttackServer> | undefined => {
-    const { x, y, indexPlayer } = data;
-      if (!isShootInArray({x, y}, this.roomUsers[indexPlayer].shoots)) {
+  public atack = (indexPlayer: number, coord: Coordinates): Array<AttackServer> | undefined => {
+    if (!isShootInArray(coord, this.roomUsers[indexPlayer].shoots)) {
         let result: "killed" | "shot" | "miss" = "miss";
         let cells: Coordinates[] | undefined;
-        this.roomUsers[indexPlayer].shoots?.push({x, y});
+        this.roomUsers[indexPlayer].shoots?.push(coord);
         this.roomUsers.map((user) => {
           if (user.index !== indexPlayer) {
             user.ships?.map((ship) => {
               if (ship.status !== "killed") {
                 ship.fields?.map((field) => {
-                  if (!field.shot && field.x === x && field.y === y) {
+                  if (!field.shot && field.x === coord.x && field.y === coord.y) {
                     ship.status = "shot";
                     field.shot = true;
                     result = "shot";
@@ -127,8 +126,8 @@ class Game {
         const res: Array<AttackServer> = [{
           position:
             {
-              x: x,
-              y: y,
+              x: coord.x,
+              y: coord.y,
             },
           currentPlayer: indexPlayer,
           status: result,
@@ -191,7 +190,8 @@ class Game {
         }
     }
     const dotAtack = getDot();
-    return this.atack({...dotAtack, indexPlayer});
+    console.log(dotAtack);
+    return this.atack(indexPlayer, dotAtack);
   }
 
 }

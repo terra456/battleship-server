@@ -1,5 +1,5 @@
 import  WebSocket from 'ws';
-import { AttackClient, AttackServer, ShipOnClient, UpdateRoomServer, UserData } from "./types";
+import { AttackClient, AttackServer, Coordinates, ShipOnClient, UpdateRoomServer, UserData } from "./types";
 import { randomInteger } from './utils';
 import EventEmitter from 'node:events';
 import { addShipsData, getShipCells, placeShipsOnField, shoot } from './game_functions';
@@ -53,7 +53,12 @@ class Room {
     });
   }
 
+  deliteUsers = () => {
+    this.roomUsers = [];
+  }
+
   addBotToRoom = () => {
+    this.roomUsers.push({index: 1, name: 'Game_Bot'});
     const data = this.game.addBot();
     this.roomUsers[0].userWS?.send(JSON.stringify({
       type: "create_game",
@@ -98,10 +103,9 @@ class Room {
     }
   }
 
-  atack = (data: AttackClient, isRandom = false) => {
-    const { x, y, indexPlayer } = data;
+  atack = (indexPlayer: number, coord: Coordinates | undefined = undefined) => {
     if (this.currentPlayer === indexPlayer) {
-      const resData = !isRandom ? this.game.atack(data) : this.game.randomAtack(indexPlayer);
+      const resData = coord ? this.game.atack(indexPlayer, coord) : this.game.randomAtack(indexPlayer);
       if (resData) {
         this.roomUsers.forEach((user) => {
           resData.forEach((data) => {
@@ -137,8 +141,8 @@ class Room {
     })
     if (this.isWithBot && this.currentPlayer === 1) {
       setTimeout(() => {
-        this.atack({x: 0, y: 0, indexPlayer: 1}, true);
-      }, 500);
+        this.atack(1);
+      }, 800);
     }
   }
 

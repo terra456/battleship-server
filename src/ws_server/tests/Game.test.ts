@@ -106,8 +106,6 @@ describe('Test play with 2 users', () => {
     expect(game.roomId).toBe(3);
     expect(game.roomUsers).toHaveLength(1);
     expect(game.isGame).toBe(false);
-    // expect(game.currentPlayer).toBe(0);
-    // expect(game.isWithBot).toBe(false);
   })
 
   test('add second player', () => {
@@ -126,95 +124,70 @@ describe('Test play with 2 users', () => {
     expect(game.roomUsers[1].ships).toBeUndefined();
     game.addShips(1, shipsSecond);
     expect(game.roomUsers[1].ships).toStrictEqual(shipsSecond1);
-    // expect(game.currentPlayer).toBe(0);
   })
 
   test('Shoot first miss', () => {
-    game.atack({ x:3, y:5, indexPlayer:0 });
+    game.atack(0, { x:3, y:5 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}]);
     expect(game.roomUsers[1].shoots).toStrictEqual([]);
-    // expect(game.currentPlayer).toBe(1);
   })
 
   test('Shoot second miss', () => {
-    game.atack({ x:0, y:0, indexPlayer:1 });
+    game.atack(1, { x:0, y:0 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}]);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}]);
-    // expect(game.currentPlayer).toBe(0);
   })
 
   test('Shoot 2 first miss', () => {
-    // expect(game.currentPlayer).toBe(0);
-    game.atack({ x:4, y:6, indexPlayer:0 });
+    game.atack(0, { x:4, y:6 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}, { x:4, y:6}]);
-    // expect(game.currentPlayer).toBe(1);
   })
 
   test('Shoot 2 second miss', () => {
-    game.atack({ x:0, y:1, indexPlayer:1 });
+    game.atack(1, { x:0, y:1 });
     console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}]);
-    // expect(game.currentPlayer).toBe(0);
   })
 
   test('Shoot 3 first shot', () => {
-    // expect(game.currentPlayer).toBe(0);
-    game.atack({ x:1, y:8, indexPlayer:0 });
+    game.atack(0, { x:1, y:8 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}, { x:4, y:6}, { x:1, y:8}]);
     expect(game.roomUsers[1].ships).toStrictEqual(shipsSecond2);
-    // expect(game.currentPlayer).toBe(1);
   })
 
   test('Shoot 3 second miss', () => {
-    game.atack({ x:0, y:2, indexPlayer:1 });
+    game.atack(1, { x:0, y:2 });
     console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}]);
-    // expect(game.currentPlayer).toBe(0);
   })
 
-  // test('Shoot 4a first repeat in the same field', () => {
-  //   // expect(game.currentPlayer).toBe(0);
-  //   expect(() => game.atack({ x:3, y:5, indexPlayer:0 })).toThrow(
-  //     new Error('Shoot in same field'),
-  //   );
-  //   expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}, { x:4, y:6}, { x:1, y:8}]);
-  //   // expect(game.currentPlayer).toBe(0);
-  // })
-
   test('Shoot 4 first miss', () => {
-    // expect(game.currentPlayer).toBe(0);
-    game.atack({ x:1, y:9, indexPlayer:0 });
+    game.atack(0, { x:1, y:9 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}, { x:4, y:6}, { x:1, y:8}, { x:1, y:9}]);
     expect(game.roomUsers[1].ships).toStrictEqual(shipsSecond2);
-    // expect(game.currentPlayer).toBe(1);
   })
 
 
   test('Shoot 4 second miss', () => {
-    game.atack({ x:0, y:3, indexPlayer:1 });
+    game.atack(1, { x:0, y:3 });
     console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}, { x:0, y:3}]);
-    // expect(game.currentPlayer).toBe(0);
   })
 
   test('Shoot 5 first miss', () => {
-    // expect(game.currentPlayer).toBe(0);
-    game.atack({ x:0, y:8, indexPlayer:0 });
+    game.atack(0, { x:0, y:8 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}, { x:4, y:6}, { x:1, y:8}, { x:1, y:9}, { x:0, y:8}]);
     expect(game.roomUsers[1].ships).toStrictEqual(shipsSecond2);
-    // expect(game.currentPlayer).toBe(1);
   })
 
   test('Shoot 5 second miss', () => {
-    game.atack({ x:0, y:4, indexPlayer:1 });
+    game.atack(1, { x:0, y:4 });
     console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}, { x:0, y:3}, { x:0, y:4}]);
-    // expect(game.currentPlayer).toBe(0);
   })
 
   test('Shoot 6 first kill', () => {
-    // expect(game.currentPlayer).toBe(0);
-    game.atack({ x:1, y:7, indexPlayer:0 });
+    game.atack(0, { x:1, y:7 });
     expect(game.roomUsers[0].shoots).toStrictEqual([{ x:3, y:5}, { x:4, y:6}, { x:1, y:8}, { x:1, y:9}, { x:0, y:8}, { x:1, y:7},
       { x: 0, y: 6 },
       { x: 0, y: 7 },
@@ -229,14 +202,12 @@ describe('Test play with 2 users', () => {
       { x: 2, y: 8 },
       { x: 2, y: 9 }]);
     expect(game.roomUsers[1].ships).toStrictEqual(shipsSecond3);
-    // expect(game.currentPlayer).toBe(1);
   })
 
   test('Shoot 6 second miss', () => {
-    game.atack({ x:0, y:5, indexPlayer:1 });
+    game.atack(1, { x:0, y:5 });
     console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}, { x:0, y:3}, { x:0, y:4}, { x:0, y:5}]);
-    // expect(game.currentPlayer).toBe(0);
   })
 
 

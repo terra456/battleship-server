@@ -19,26 +19,24 @@ class Actions {
     this.winners = [];
     this.rooms = [];
     this.users = [];
-    this.wss.addListener('win', (gameId, userName) => {
-      console.log('win ', userName);
-      const index = this.winners.findIndex((winner) => winner.name === userName)
-      if (index > 0) {
-        this.winners[index].wins++;
-      } else {
-        this.winners.push({
-          name: userName,
-          wins: 1,
-        })
-      }
-      this.sendWinners();
-    })
+    // this.wss.addListener('win', (gameId, userName) => {
+    //   const index = this.winners.findIndex((winner) => winner.name === userName)
+    //   if (index > 0) {
+    //     this.winners[index].wins++;
+    //   } else {
+    //     this.winners.push({
+    //       name: userName,
+    //       wins: 1,
+    //     })
+    //   }
+    //   this.sendWinners();
+    // })
   }
 
   addWinner = (userName: string) => {
-    console.log('win ', userName);
-    const index = this.winners.findIndex((winner) => winner.name === userName)
-    if (index > 0) {
-      this.winners[index].wins++;
+    const index = this.winners.findIndex((winner) => winner.name === userName);
+    if (index >= 0) {
+      this.winners[index].wins += 1;
     } else {
       this.winners.push({
         name: userName,
@@ -66,12 +64,12 @@ class Actions {
       this.users.push(userData);
     } else {
       const user = this.users.find((user) => user.name === name);
-      if (user && user.password !== password) {
+      if (user && user.password === password) {
         user.userWS = ws;
         response.index = user.id;
       } else {
         response.error = true;
-        response.errorText = `User with ${name} allready exist`;
+        response.errorText = `User with ${name} allready exist or password is incorrect`;
       }
     }
     const res: RequestResponse = {
@@ -86,7 +84,7 @@ class Actions {
       const resUpdate: RequestResponse = {
         type: 'update_room',
         data:
-            JSON.stringify(this.rooms.map((el) => el && el.roomUsers.length === 1 && el.startedInfo()).filter((el) => el)),
+            JSON.stringify(this.rooms.slice().map((el) => el && !el.game.isGame && el.roomUsers.length === 1 && el.startedInfo()).filter((el) => el)),
         id: userId,
       }
       ws.send(JSON.stringify(resUpdate));
@@ -106,28 +104,28 @@ class Actions {
     const user = this.users.find((user) => user.userWS === ws) as UserData;
     const gameID = this.rooms.length;
     const index = this.rooms.findIndex((el) => !el.game.isGame && el.roomUsers.findIndex((user) => user.userWS === ws) >= 0)
-    console.log(index);
     if (index < 0) {
       const room = new Room(gameID, 0, user);
       this.rooms.push(room);
-      if (this.rooms.length > 0) {
-        const resUpdate: RequestResponse = {
-          type: 'update_room',
-          data:
-              JSON.stringify(this.rooms.map((el) => {
-                if (el && !el.game.isGame && el.startedInfo()) {
-                  return el.startedInfo();
-                }
-              }).filter((el) => el)),
-          id: req.id,
-        }
-        // ws.send(JSON.stringify(resUpdate));
-        this.wss.clients.forEach(function each(client) {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(resUpdate));
-          }
-        });
-      }
+      this.updateRoomSendForEach();
+      // if (this.rooms.length > 0) {
+      //   const resUpdate: RequestResponse = {
+      //     type: 'update_room',
+      //     data:
+      //         JSON.stringify(this.rooms.map((el) => {
+      //           if (el && el.game.roomUsers.length === 1 && !el.game.isGame) {
+      //             return el.startedInfo();
+      //           }
+      //         }).filter((el) => el)),
+      //     id: req.id,
+      //   }
+      //   // ws.send(JSON.stringify(resUpdate));
+      //   this.wss.clients.forEach(function each(client) {
+      //     if (client.readyState === WebSocket.OPEN) {
+      //       client.send(JSON.stringify(resUpdate));
+      //     }
+      //   });
+      // }
     }
   }
 
@@ -135,8 +133,14 @@ class Actions {
     const { indexRoom } = JSON.parse(req.data);
     const user = this.users.find((user) => user.userWS === ws) as UserData;
     if (this.rooms[indexRoom].roomUsers.findIndex((user) => user.userWS === ws) < 0) {
-      const usersInRoom = this.rooms[indexRoom].addPlayerToRoom(1, user);
-      
+      this.rooms.map((el) => {
+        const index = el.roomUsers.findIndex((el) => el.userWS === ws);
+        if (index >= 0) {
+          el.deliteUsers();
+        }
+        return el;
+      });
+      this.rooms[indexRoom].addPlayerToRoom(1, user);
       const res: RequestResponse = {
         type: 'create_game',
         data:JSON.stringify({
@@ -147,24 +151,29 @@ class Actions {
       }
       ws.send(JSON.stringify(res));
     }
+    this.updateRoomSendForEach(ws);
   }
 
 
-  updateRoom = (index: number, id: number) => {
-    const data = this.rooms[index].startedInfo();
-
-    const res: RequestResponse = {
-      type: "update_room",
+  updateRoomSendForEach = (ws: WebSocket | undefined = undefined) => {
+    if (this.rooms.length > 0) {
+      const resUpdate: RequestResponse = {
+        type: 'update_room',
         data:
-          JSON.stringify([data]),
-      id: id,
-    }
-
-    this.wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(res));
+            JSON.stringify(this.rooms.slice().map((el) => {
+              if (el && el.roomUsers.length === 1 && !el.game.isGame) {
+                return el.startedInfo();
+              }
+            }).filter((el) => el)),
+        id: 0,
       }
-    });
+      // ws.send(JSON.stringify(resUpdate));
+      this.wss.clients.forEach(function each(client) {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(resUpdate));
+        }
+      });
+    }
   }
 
   addShips = (ws: WebSocket, req: RequestResponse) => {
@@ -174,17 +183,25 @@ class Actions {
 
   attack = (req: RequestResponse) => {
     const {gameId, x, y, indexPlayer} = JSON.parse(req.data);
-    this.rooms[gameId].atack({gameId, x, y, indexPlayer});
+    this.rooms[gameId].atack(indexPlayer, {x, y});
   }
 
   randomAttack = (req: RequestResponse) => {
     const {gameId, indexPlayer} = JSON.parse(req.data);
-    this.rooms[gameId].atack(indexPlayer, true);
+    this.rooms[gameId].atack(indexPlayer);
   }
 
   singlePlay= (ws: WebSocket, req: RequestResponse) => {
     const user = this.users.find((user) => user.userWS === ws) as UserData;
     const gameID = this.rooms.length;
+    this.rooms.map((el) => {
+      const index = el.roomUsers.findIndex((el) => el.userWS === ws);
+      if (index >= 0) {
+        el.deliteUsers();
+      }
+      return el;
+    });
+    this.updateRoomSendForEach(ws);
     const room = new Room(gameID, 0, user, true);
     this.rooms.push(room);
     const res: RequestResponse = {

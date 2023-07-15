@@ -1,7 +1,6 @@
 import { Coordinates, ShipOnClient } from 'ws_server/types';
 import { getShipCells, addShipsData, randomShip, isShootInArray } from '../game_functions';
-import { Ship } from 'ws_server/Room';
-import { randomInteger } from 'ws_server/utils';
+import { Ship } from 'ws_server/Game';
 
   const testCases: Array<{ship: ShipOnClient, expected: Coordinates[]}> = [
   { ship: { position: { x: 7, y: 3 }, direction: true, type: "huge", length: 4 },

@@ -145,7 +145,6 @@ describe('Test play with 2 users', () => {
 
   test('Shoot 2 second miss', () => {
     game.atack(1, { x:0, y:1 });
-    console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}]);
   })
 
@@ -157,7 +156,6 @@ describe('Test play with 2 users', () => {
 
   test('Shoot 3 second miss', () => {
     game.atack(1, { x:0, y:2 });
-    console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}]);
   })
 
@@ -170,7 +168,6 @@ describe('Test play with 2 users', () => {
 
   test('Shoot 4 second miss', () => {
     game.atack(1, { x:0, y:3 });
-    console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}, { x:0, y:3}]);
   })
 
@@ -182,7 +179,6 @@ describe('Test play with 2 users', () => {
 
   test('Shoot 5 second miss', () => {
     game.atack(1, { x:0, y:4 });
-    console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}, { x:0, y:3}, { x:0, y:4}]);
   })
 
@@ -194,8 +190,6 @@ describe('Test play with 2 users', () => {
       { x: 0, y: 8 },
       { x: 0, y: 9 },
       { x: 1, y: 6 },
-      { x: 1, y: 7 },
-      { x: 1, y: 8 },
       { x: 1, y: 9 },
       { x: 2, y: 6 },
       { x: 2, y: 7 },
@@ -206,7 +200,6 @@ describe('Test play with 2 users', () => {
 
   test('Shoot 6 second miss', () => {
     game.atack(1, { x:0, y:5 });
-    console.log(game.roomUsers);
     expect(game.roomUsers[1].shoots).toStrictEqual([{ x:0, y:0}, { x:0, y:1}, { x:0, y:2}, { x:0, y:3}, { x:0, y:4}, { x:0, y:5}]);
   })
 

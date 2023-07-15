@@ -44,16 +44,9 @@ class Game {
     this.isGame = true;
     return {
         roomId: this.roomId,
-        roomUsers: [
-          {
-            name: this.roomUsers[0].name,
-            index: this.roomUsers[0].index
-          },
-          {
-            name: this.roomUsers[1].name,
-            index: this.roomUsers[1].index
-          }
-        ],
+        roomUsers: this.roomUsers.slice().map(({name, index}) => {
+          return {name, index};
+        })
     };
   }
 
@@ -156,7 +149,6 @@ class Game {
         }
     }
     const dotAtack = getDot();
-    console.log(dotAtack);
     return this.atack(indexPlayer, dotAtack);
   }
 

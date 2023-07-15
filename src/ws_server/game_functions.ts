@@ -82,11 +82,9 @@ export const placeShipsOnField = (): ShipOnClient[] => {
         }
       }
       const shipCells = getShipCells(ship);
-      console.log(shipCells);
       shipCells.forEach(({x, y}) => {
         fieldCells.splice(x * 10 + y, 1, false);
       });
-      console.log(fieldCells);
       ships.push(ship);
     }
   }

@@ -1,5 +1,3 @@
-// import { randomInteger } from "ws_server/utils";
-import { Ship } from "ws_server/Room";
 import { checkShipOnField } from "../game_functions";
 import { Coordinates, ShipOnClient } from "ws_server/types";
 

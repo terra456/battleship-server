@@ -2,7 +2,6 @@ import  WebSocket, { WebSocketServer } from 'ws';
 import { Server } from "ws";
 import { LoginData, LoginServer, RequestResponse, UserData } from "./types";
 import Room from './Room';
-import { randomInteger } from './utils';
 
 class Actions {
   winners: never[];
@@ -47,11 +46,11 @@ class Actions {
       type: 'reg',
       data:
           JSON.stringify(response),
-      id: userId,
+      id: 0,
     }
     ws.send(JSON.stringify(res));
 
-    if (this.rooms.length > 0 && this.rooms.every((room) => !room.isGame)) {
+    if (this.rooms.length > 0 && this.rooms.every((room) => !room.game.isGame)) {
       const resUpdate: RequestResponse = {
         type: 'update_room',
         data:
@@ -68,14 +67,12 @@ class Actions {
     const room = new Room(gameID, 0, user);
     this.rooms.push(room);
     const res: RequestResponse = {
-      type: 'create_game',
+      type: 'update_room',
       data:
-        JSON.stringify({
-          idGame: gameID,
-          idPlayer: 0,
-        }),
+        JSON.stringify(room.startedInfo()),
       id: req.id,
     }
+    ////
     ws.send(JSON.stringify(res));
   }
 
@@ -93,7 +90,6 @@ class Actions {
       id: req.id,
     }
     ws.send(JSON.stringify(res));
-    // this.updateRoom(indexRoom, req.id);
   }
 
 
@@ -117,16 +113,6 @@ class Actions {
   addShips = (ws: WebSocket, req: RequestResponse) => {
     const {gameId, ships, indexPlayer} = JSON.parse(req.data);
     this.rooms[gameId].addShips(indexPlayer, ships);
-    // this.rooms[gameId].startGameEmitter.once('start', (currentPlayer: number) => {
-      // ws.send(JSON.stringify({
-      //   type: "start_game",
-      //   data: JSON.stringify({
-      //     ships: ships,
-      //     currentPlayerIndex: currentPlayer,
-      //   }),
-      //   id: req.id,
-      // }));
-    // })
   }
 
   attack = (req: RequestResponse) => {
@@ -136,12 +122,25 @@ class Actions {
 
   randomAttack = (req: RequestResponse) => {
     const {gameId, indexPlayer} = JSON.parse(req.data);
-    const x = randomInteger(0, 9);
-    const y = randomInteger(0, 9);
-    this.rooms[gameId].atack({gameId, x, y, indexPlayer});
+    this.rooms[gameId].atack(indexPlayer, true);
   }
 
-
+  singlePlay= (ws: WebSocket, req: RequestResponse) => {
+    const user = this.users.find((user) => user.userWS === ws) as UserData;
+    const gameID = this.rooms.length;
+    const room = new Room(gameID, 0, user, true);
+    this.rooms.push(room);
+    const res: RequestResponse = {
+      type: 'create_game',
+      data:
+        JSON.stringify({
+          idGame: gameID,
+          idPlayer: 0,
+        }),
+      id: req.id,
+    }
+    ws.send(JSON.stringify(res));
+  }
 }
 
 export default Actions;

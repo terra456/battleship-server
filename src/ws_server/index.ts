@@ -13,7 +13,6 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', (msg: string) => {
     const data = JSON.parse(msg);
-    console.log('received: %s', data);
     switch (data.type) {
       case 'reg':
         actions.registration(ws, data);
@@ -37,6 +36,10 @@ wss.on('connection', function connection(ws) {
     
       case 'randomAttack':
         actions.randomAttack(data);
+        break;
+
+      case 'single_play':
+        actions.singlePlay(ws, data);
         break;
     
       default:

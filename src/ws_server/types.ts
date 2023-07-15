@@ -13,6 +13,12 @@ export interface UserData {
   userWS: WebSocket,
 }
 
+export interface UserInfo {
+  id: number,
+  name: string,
+  password: string,
+}
+
 export interface LoginData {
   name: string,
   password: string,
@@ -49,19 +55,21 @@ export interface UpdateRoomServer {
   >,
 }
 
+export interface ShipOnClient {
+  position: Coordinates,
+  direction: boolean,
+  length: number,
+  type: "small"|"medium"|"large"|"huge",
+}
+
+export interface Coordinates {
+  x: number,
+  y: number,
+}
+
 export interface AddShips {
   gameId: number,
-  ships: Array<
-          {
-              position: {
-                  x: number,
-                  y: number,
-              },
-              direction: boolean,
-              length: number,
-              type: "small"|"medium"|"large"|"huge",
-          }
-      >,
+  ships: Array<ShipOnClient>,
   indexPlayer: number,
 }
 
@@ -82,7 +90,7 @@ export interface StartGameServer {
 }
 
 export interface AttackClient {
-  gameId: number,
+  gameId?: number,
   x: number,
   y: number,
   indexPlayer: number,

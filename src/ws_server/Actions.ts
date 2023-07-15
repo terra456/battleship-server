@@ -1,11 +1,16 @@
-import  WebSocket, { WebSocketServer } from 'ws';
+import  WebSocket, { EventEmitter, WebSocketServer } from 'ws';
 import { Server } from "ws";
 import { LoginData, LoginServer, RequestResponse, UserData } from "./types";
 import Room from './Room';
 
+export interface Winner {
+  name: string,
+  wins: number,
+}
+
 class Actions {
-  winners: never[];
-  rooms: Room[];
+  winners: Winner[];
+  rooms: Array<Room>;
   wss: WebSocket.Server<typeof WebSocket>;
   users: UserData[];
 
@@ -14,6 +19,33 @@ class Actions {
     this.winners = [];
     this.rooms = [];
     this.users = [];
+    this.wss.addListener('win', (gameId, userName) => {
+      console.log('win ', userName);
+      const index = this.winners.findIndex((winner) => winner.name === userName)
+      if (index > 0) {
+        this.winners[index].wins++;
+      } else {
+        this.winners.push({
+          name: userName,
+          wins: 1,
+        })
+      }
+      this.sendWinners();
+    })
+  }
+
+  addWinner = (userName: string) => {
+    console.log('win ', userName);
+    const index = this.winners.findIndex((winner) => winner.name === userName)
+    if (index > 0) {
+      this.winners[index].wins++;
+    } else {
+      this.winners.push({
+        name: userName,
+        wins: 1,
+      })
+    }
+    this.sendWinners();
   }
 
   registration = (ws: WebSocket, req: RequestResponse) => {
@@ -50,46 +82,71 @@ class Actions {
     }
     ws.send(JSON.stringify(res));
 
-    if (this.rooms.length > 0 && this.rooms.every((room) => !room.game.isGame)) {
+    if (this.rooms.length > 0) {
       const resUpdate: RequestResponse = {
         type: 'update_room',
         data:
-            JSON.stringify(this.rooms.map((el) => el.startedInfo())),
+            JSON.stringify(this.rooms.map((el) => el && el.startedInfo()).filter((el) => el)),
         id: userId,
       }
       ws.send(JSON.stringify(resUpdate));
+    }
+
+    if (this.winners.length > 0) {
+      const res: RequestResponse = {
+        type: 'update_winners',
+        data: JSON.stringify(this.winners),
+        id: userId,
+      }
+      ws.send(JSON.stringify(res));
     }
   }
   
   createRoom = (ws: WebSocket, req: RequestResponse) => {
     const user = this.users.find((user) => user.userWS === ws) as UserData;
     const gameID = this.rooms.length;
-    const room = new Room(gameID, 0, user);
-    this.rooms.push(room);
-    const res: RequestResponse = {
-      type: 'update_room',
-      data:
-        JSON.stringify(room.startedInfo()),
-      id: req.id,
+    const index = this.rooms.findIndex((el) => !el.game.isGame && el.roomUsers.findIndex((user) => user.userWS === ws) >= 0)
+    console.log(index);
+    if (index < 0) {
+      const room = new Room(gameID, 0, user);
+      this.rooms.push(room);
+      if (this.rooms.length > 0) {
+        const resUpdate: RequestResponse = {
+          type: 'update_room',
+          data:
+              JSON.stringify(this.rooms.map((el) => {
+                if (el && !el.game.isGame && el.startedInfo()) {
+                  return el.startedInfo();
+                }
+              }).filter((el) => el)),
+          id: req.id,
+        }
+        // ws.send(JSON.stringify(resUpdate));
+        this.wss.clients.forEach(function each(client) {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(resUpdate));
+          }
+        });
+      }
     }
-    ////
-    ws.send(JSON.stringify(res));
   }
 
   addPlayerToRoom = (ws: WebSocket, req: RequestResponse) => {
     const { indexRoom } = JSON.parse(req.data);
     const user = this.users.find((user) => user.userWS === ws) as UserData;
-    const usersInRoom = this.rooms[indexRoom].addPlayerToRoom(1, user);
-    
-    const res: RequestResponse = {
-      type: 'create_game',
-      data:JSON.stringify({
-          idGame: indexRoom,
-          idPlayer: 1,
-        }),
-      id: req.id,
+    if (this.rooms[indexRoom].roomUsers.findIndex((user) => user.userWS === ws) < 0) {
+      const usersInRoom = this.rooms[indexRoom].addPlayerToRoom(1, user);
+      
+      const res: RequestResponse = {
+        type: 'create_game',
+        data:JSON.stringify({
+            idGame: indexRoom,
+            idPlayer: 1,
+          }),
+        id: req.id,
+      }
+      ws.send(JSON.stringify(res));
     }
-    ws.send(JSON.stringify(res));
   }
 
 
@@ -99,7 +156,7 @@ class Actions {
     const res: RequestResponse = {
       type: "update_room",
         data:
-          JSON.stringify(data),
+          JSON.stringify([data]),
       id: id,
     }
 
@@ -141,6 +198,20 @@ class Actions {
     }
     ws.send(JSON.stringify(res));
   }
+  
+  sendWinners = () => {
+    const res: RequestResponse = {
+      type: "update_winners",
+      data:JSON.stringify(this.winners),
+      id: 0,
+    }
+    this.wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(res));
+      }
+    });
+  }
+
 }
 
 export default Actions;

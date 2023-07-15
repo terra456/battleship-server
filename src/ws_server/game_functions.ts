@@ -73,7 +73,7 @@ export const placeShipsOnField = (): ShipOnClient[] => {
       if (i > 1) {
         ship = newShip(i, fieldCells);
       } else {
-        const clearCells = fieldCells.filter((el) => el !== false);
+        const clearCells = fieldCells.slice().filter((el) => el !== false);
         const shipCoordinates = clearCells[randomInteger(0, clearCells.length)] as Coordinates;
         ship = {
           position: shipCoordinates,

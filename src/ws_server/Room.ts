@@ -4,7 +4,7 @@ import { randomInteger } from './utils';
 import EventEmitter from 'node:events';
 import { addShipsData, getShipCells, placeShipsOnField, shoot } from './game_functions';
 import Game from './Game';
-class MyEmitter extends EventEmitter {}
+import { winGameEmitter } from './index';
 
 interface UserInRoom {
   index: number;
@@ -15,7 +15,7 @@ interface UserInRoom {
 class Room {
   roomId: number;
   roomUsers: UserInRoom[];
-  // startGameEmitter: MyEmitter;
+  // winGameEmitter: MyEmitter;
   currentPlayer: number;
   game: Game;
   isWithBot: boolean;
@@ -24,7 +24,6 @@ class Room {
     this.roomId = roomId;
     this.roomUsers = [{index, name, userWS}];
     this.game = new Game(roomId, 0, name);
-    // this.startGameEmitter = new MyEmitter();
     this.currentPlayer = 0;
     this.isWithBot = withBot;
     if (this.isWithBot) {
@@ -164,6 +163,7 @@ class Room {
         id: 0,
       }));
     })
+    winGameEmitter.emit('win', this.roomUsers[this.currentPlayer].name);
   }
 
 }

@@ -1,12 +1,10 @@
 import { EventEmitter, WebSocketServer } from 'ws';
-import { AddToRoom, AttackServer, LoginData, RequestResponse } from './types';
 import Actions from './Actions';
 
 const PORT = 3000;
 
 const wss = new WebSocketServer({ port: PORT });
 
-// class MyEmitter extends EventEmitter {}
 export const winGameEmitter = new EventEmitter();
 
 const actions = new Actions(wss);
@@ -53,8 +51,6 @@ wss.on('connection', function connection(ws) {
         break;
     }
   });
-
-  ws.send('something');
 });
 
 winGameEmitter.on('win', (name) => {

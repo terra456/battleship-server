@@ -1,8 +1,5 @@
 import  WebSocket from 'ws';
-import { AttackClient, AttackServer, Coordinates, ShipOnClient, UpdateRoomServer, UserData } from "./types";
-import { randomInteger } from './utils';
-import EventEmitter from 'node:events';
-import { addShipsData, getShipCells, placeShipsOnField, shoot } from './game_functions';
+import { Coordinates, ShipOnClient, UpdateRoomServer, UserData } from "./types";
 import Game from './Game';
 import { winGameEmitter } from './index';
 
@@ -15,7 +12,6 @@ interface UserInRoom {
 class Room {
   roomId: number;
   roomUsers: UserInRoom[];
-  // winGameEmitter: MyEmitter;
   currentPlayer: number;
   game: Game;
   isWithBot: boolean;
@@ -145,16 +141,6 @@ class Room {
       }, 800);
     }
   }
-
-  
-
-  // isWinGame = () => {
-  //   if (this.roomUsers[this.currentPlayer ? 0 : 1].ships?.every((ship) => ship.status === 'killed')) {
-  //     this.winGame();
-  //   } else {
-  //     this.turn();
-  //   }
-  // }
 
   winGame = (index: number) => {
     const res = {

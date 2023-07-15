@@ -1,6 +1,5 @@
-import  WebSocket, { EventEmitter, WebSocketServer } from 'ws';
-import { Server } from "ws";
-import { LoginData, LoginServer, RequestResponse, UserData } from "./types";
+import  WebSocket from 'ws';
+import { LoginServer, RequestResponse, UserData } from "./types";
 import Room from './Room';
 
 export interface Winner {
@@ -19,18 +18,6 @@ class Actions {
     this.winners = [];
     this.rooms = [];
     this.users = [];
-    // this.wss.addListener('win', (gameId, userName) => {
-    //   const index = this.winners.findIndex((winner) => winner.name === userName)
-    //   if (index > 0) {
-    //     this.winners[index].wins++;
-    //   } else {
-    //     this.winners.push({
-    //       name: userName,
-    //       wins: 1,
-    //     })
-    //   }
-    //   this.sendWinners();
-    // })
   }
 
   addWinner = (userName: string) => {
@@ -108,24 +95,6 @@ class Actions {
       const room = new Room(gameID, 0, user);
       this.rooms.push(room);
       this.updateRoomSendForEach();
-      // if (this.rooms.length > 0) {
-      //   const resUpdate: RequestResponse = {
-      //     type: 'update_room',
-      //     data:
-      //         JSON.stringify(this.rooms.map((el) => {
-      //           if (el && el.game.roomUsers.length === 1 && !el.game.isGame) {
-      //             return el.startedInfo();
-      //           }
-      //         }).filter((el) => el)),
-      //     id: req.id,
-      //   }
-      //   // ws.send(JSON.stringify(resUpdate));
-      //   this.wss.clients.forEach(function each(client) {
-      //     if (client.readyState === WebSocket.OPEN) {
-      //       client.send(JSON.stringify(resUpdate));
-      //     }
-      //   });
-      // }
     }
   }
 
@@ -167,7 +136,6 @@ class Actions {
             }).filter((el) => el)),
         id: 0,
       }
-      // ws.send(JSON.stringify(resUpdate));
       this.wss.clients.forEach(function each(client) {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(resUpdate));

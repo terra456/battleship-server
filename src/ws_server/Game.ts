@@ -1,9 +1,6 @@
-import  WebSocket from 'ws';
-import { AttackClient, AttackServer, Coordinates, ShipOnClient, StartGameServer, UpdateRoomServer, UserData, UserInfo } from "./types";
-import { randomInteger } from './utils';
-import EventEmitter from 'node:events';
-import { addShipsData, getShipCells, isShootInArray, placeShipsOnField, shoot } from './game_functions';
-class MyEmitter extends EventEmitter {}
+import { AttackServer, Coordinates, ShipOnClient, UpdateRoomServer } from "./types";
+import { randomInteger } from './game_functions';
+import { addShipsData, getShipCells, isShootInArray, placeShipsOnField } from './game_functions';
 
 interface User {
   index: number;
@@ -34,19 +31,12 @@ export interface Ship {
 class Game {
   roomUsers: User[];
   isGame: boolean;
-  // currentPlayer: number;
-  // isWithBot: boolean;
   roomId: number;
 
   constructor(roomId: number, indexUser: number, name: string) {
     this.roomId = roomId;
     this.roomUsers = [{index: indexUser, name, shoots: []}];
     this.isGame = false;
-    // this.currentPlayer = indexUser;
-    // this.isWithBot = withBot;
-    // if (withBot) {
-    //   this.addBot();
-    // }
   }
 
   public addPlayer = (indexUser: number, name: string): UpdateRoomServer => {
@@ -88,10 +78,6 @@ class Game {
         user.ships = addShipsData(ships);
       }
     });
-  }
-
-  public addMissedFields = () => {
-
   }
 
   public atack = (indexPlayer: number, coord: Coordinates): Array<AttackServer> | undefined => {
@@ -148,33 +134,13 @@ class Game {
       }
   }
 
-  // turn = () => {
-  //   this.currentPlayer = this.currentPlayer === 1 ? 0 : 1;
-  //   if (this.isWithBot && this.currentPlayer === 1) {
-  //     this.randomAtack(1);
-  //   }
-  //   return {
-  //     currentPlayer: this.currentPlayer,
-  //   };
-  // }
-
   isWinGame = (indexPlayer: number): Boolean => {
     if (this.roomUsers[indexPlayer ? 0 : 1].ships?.every((ship) => ship.status === 'killed')) {
       return true;
     } else {
       return false;
     }
-    //   this.winGame();
-    // } else {
-    //   this.turn();
-    // }
   }
-
-  // winGame = () => {
-  //   return {
-  //     winPlayer: this.currentPlayer,
-  //   }
-  // }
 
   randomAtack = (indexPlayer: number) => {
     const getDot = (): {x: number, y: number} => {

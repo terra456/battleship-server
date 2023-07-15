@@ -1,6 +1,5 @@
 import { Ship } from "./Game";
 import { Coordinates, ShipOnClient } from "./types";
-// import { randomInteger } from "./utils";
 
 export const randomInteger = (min: number, max: number) => {
   // случайное число от min до (max+1)
